@@ -299,13 +299,15 @@ if st.session_state.piano_attivo_id:
         )
 
     with col3:
-    if st.button("🆙 CARICA IN FOUNDRY", width='stretch', type="primary"):
-        st.write("### 🔍 Debug Log") # Appare nella pagina web
-        
-        # 1. Verifica Dati
-        st.write(f"- Piano attivo: `{st.session_state.piano_attivo_id}`")
-        df_to_send = edited_df.drop(columns=["Ricevuto", "Data Ricezione", "Stato Consegna"])
-        st.write(f"- Righe da inviare: {len(df_to_send)}")
+        # Questo blocco DEVE essere indentato rispetto a 'with col3:'
+        if st.button("🆙 CARICA IN FOUNDRY", width='stretch', type="primary"):
+            try:
+                # E questo DEVE essere indentato rispetto a 'if st.button'
+                df_to_send = edited_df.drop(columns=["Ricevuto", "Data Ricezione", "Stato Consegna"])
+                upload_to_foundry(df_to_send, st.session_state.piano_attivo_id)
+                st.success("Dati caricati su Foundry con successo.")
+            except Exception as e:
+                st.error(f"Errore caricamento Foundry: {str(e)}"))}")
 
         # 2. Tentativo di esecuzione
         try:
