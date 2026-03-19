@@ -16,38 +16,19 @@ load_dotenv()  # Carica .env dal percorso corrente
 def upload_to_foundry(df: pd.DataFrame, piano_id: str):
     token = os.getenv("TOKEN")
     foundry_url = os.getenv("DOMAIN")
-    DATASET_RID = "ri.foundry.main.dataset.xxxxx"
-    if not token or not foundry_url:
-        raise Exception("TOKEN o DOMAIN non configurati nel .env")
-
-    url = f"{foundry_url}/api/v2/datasets/{DATASET_RID}/transactions"
-
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
-
-    df_copy = df.copy()
-    df_copy["piano_id"] = piano_id
-    df_copy["upload_time"] = datetime.now().isoformat()
-
-    data = df_copy.to_dict(orient="records")
-
-    payload = {
-        "operations": [
-            {
-                "type": "append",
-                "data": data
-            }
-        ]
-    }
-
-    response = requests.post(url, json=payload, headers=headers)
-
-    if response.status_code != 200:
-        raise Exception(f"Errore Foundry: {response.text}")
-
-    return True
+    # ... (resto del codice)
+    
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=30)
+        # DEBUG: Vedi cosa risponde davvero Foundry
+        print(f"Status: {response.status_code}") 
+        print(f"Response: {response.text}")
+        
+        if response.status_code not in [200, 201, 202]:
+            raise Exception(f"Errore {response.status_code}: {response.text}")
+        return True
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Errore di connessione: {e}")
 
 
 # =========================
