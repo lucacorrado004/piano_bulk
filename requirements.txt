@@ -1,6 +1,5 @@
 streamlit
 pandas
 openpyxl
-sqlite3
 os
 datetime
