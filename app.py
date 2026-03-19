@@ -299,15 +299,19 @@ if st.session_state.piano_attivo_id:
         )
 
     with col3:
-        # Questo blocco DEVE essere indentato rispetto a 'with col3:'
         if st.button("🆙 CARICA IN FOUNDRY", width='stretch', type="primary"):
             try:
-                # E questo DEVE essere indentato rispetto a 'if st.button'
+                # Prepariamo i dati escludendo le colonne della UI
                 df_to_send = edited_df.drop(columns=["Ricevuto", "Data Ricezione", "Stato Consegna"])
+                
+                # Chiamata alla funzione
                 upload_to_foundry(df_to_send, st.session_state.piano_attivo_id)
-                st.success("Dati caricati su Foundry con successo.")
+                
+                st.success("Dati caricati su Foundry con successo!")
+                st.balloons()
             except Exception as e:
-                st.error(f"Errore caricamento Foundry: {str(e)}"))}")
+                # Riga corretta senza parentesi extra
+                st.error(f"Errore caricamento Foundry: {str(e)}")
 
         # 2. Tentativo di esecuzione
         try:
