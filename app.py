@@ -9,15 +9,12 @@ from dotenv import load_dotenv
 # =========================
 # CARICAMENTO VARIABILI AMBIENTE
 # =========================
-load_dotenv("C:\\Users\\M346685\\OneDrive - MerckGroup\\Warehouse Team - General\\app piano bulk\\code\\token.env")  # Carica .env dal percorso corrente
-
-TOKEN = os.getenv("TOKEN")
-FOUNDRY_URL = os.getenv("DOMAIN")
-DATASET_RID = "ri.foundry.main.dataset.xxxxx"
+load_dotenv("C:\Users\M346685\OneDrive - MerckGroup\Warehouse Team - General\app piano bulk\code\token.env")  # Carica .env dal percorso corrente
 
 def upload_to_foundry(df: pd.DataFrame, piano_id: str):
     token = os.getenv("TOKEN")
     foundry_url = os.getenv("DOMAIN")
+    DATASET_RID = "ri.foundry.main.dataset.xxxxx"
     if not token or not foundry_url:
         raise Exception("TOKEN o DOMAIN non configurati nel .env")
 
@@ -54,7 +51,12 @@ def upload_to_foundry(df: pd.DataFrame, piano_id: str):
 # =========================
 # CONFIGURAZIONE PAGINA
 # =========================
-st.set_page_config(page_title="Piano Bulk", page_icon="📦", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(
+    page_title="Piano Bulk",
+    page_icon="📦",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 st.markdown("""
 <style>
@@ -81,6 +83,7 @@ html, body, [class*="css"] { font-family: 'Syne', sans-serif; background-color: 
 button[kind="primary"] { background-color: var(--merck-purple) !important; border: none !important; color: white !important; }
 </style>
 """, unsafe_allow_html=True)
+
 
 # =========================
 # DATABASE MANAGER
@@ -164,6 +167,7 @@ class DatabaseManager:
         conn.close()
         return df
 
+
 # =========================
 # APP LOGIC
 # =========================
@@ -189,7 +193,7 @@ if up:
             week_scelta = st.selectbox("Seleziona la WEEK da gestire:", weeks_disponibili)
         with col_btn:
             st.write("")
-            if st.button("⚡ ESTRAI SETTIMANA", type="primary", use_container_width=True):
+            if st.button("⚡ ESTRAI SETTIMANA", type="primary", width='stretch'):
                 df_filtrato = df_preview[df_preview["WEEK"] == week_scelta]
                 st.session_state.piano_attivo_id = db.salva_nuovo_piano(df_filtrato, week_scelta)
                 try:
@@ -259,7 +263,7 @@ if st.session_state.piano_attivo_id:
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        if st.button("💾 SALVA MODIFICHE", use_container_width=True, type="primary"):
+        if st.button("💾 SALVA MODIFICHE", width='stretch', type="primary"):
             edited_df["Data Ricezione"] = edited_df.apply(
                 lambda r: r["Data Ricezione"] if (r["Ricevuto"] and r["Data Ricezione"]) else (today_str if r["Ricevuto"] else None),
                 axis=1,
@@ -267,10 +271,10 @@ if st.session_state.piano_attivo_id:
             db.salva_modifiche(st.session_state.piano_attivo_id, edited_df)
             st.success("Modifiche salvate con successo.")
             try:
-                    st.experimental_rerun()
+                st.experimental_rerun()
             except AttributeError:
-                    # fallback: ricarica manuale della pagina tramite JS
-                    st.write('<script>window.location.reload()</script>', unsafe_allow_html=True)
+                # fallback: ricarica manuale della pagina tramite JS
+                st.write('<script>window.location.reload()</script>', unsafe_allow_html=True)
 
     with col2:
         # EXPORT CSV PER POWER BI
@@ -279,11 +283,11 @@ if st.session_state.piano_attivo_id:
         csv_data = export_df.to_csv(index=False, sep=";").encode("utf-8")
 
         st.download_button(
-            label="📊 SCARICA CSV PER POWER BI", data=csv_data, file_name=f"MASTER_BULK_{st.session_state.piano_attivo_id}.csv", mime="text/csv", use_container_width=True
+            label="📊 SCARICA CSV PER POWER BI", data=csv_data, file_name=f"MASTER_BULK_{st.session_state.piano_attivo_id}.csv", mime="text/csv", width='stretch'
         )
 
     with col3:
-        if st.button("🆙 CARICA IN FOUNDRY", use_container_width=True, type="primary"):
+        if st.button("🆙 CARICA IN FOUNDRY", width='stretch', type="primary"):
             try:
                 upload_to_foundry(edited_df.drop(columns=["Ricevuto", "Data Ricezione", "Stato Consegna"]), st.session_state.piano_attivo_id)
                 st.success("Dati caricati su Foundry con successo.")
@@ -297,7 +301,7 @@ if not df_list.empty:
     cols = st.columns(5)
     for i, row in df_list.iterrows():
         with cols[i % 5]:
-            if st.button(f"📂 {row['piano_id']}", key=f"btn_{row['piano_id']}", use_container_width=True):
+            if st.button(f"📂 {row['piano_id']}", key=f"btn_{row['piano_id']}", width='stretch'):
                 st.session_state.piano_attivo_id = row["piano_id"]
                 try:
                     st.experimental_rerun()
