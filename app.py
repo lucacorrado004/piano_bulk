@@ -299,12 +299,35 @@ if st.session_state.piano_attivo_id:
         )
 
     with col3:
-        if st.button("🆙 CARICA IN FOUNDRY", width='stretch', type="primary"):
-            try:
-                upload_to_foundry(edited_df.drop(columns=["Ricevuto", "Data Ricezione", "Stato Consegna"]), st.session_state.piano_attivo_id)
-                st.success("Dati caricati su Foundry con successo.")
-            except Exception as e:
-                st.error(f"Errore caricamento Foundry: {str(e)}")
+    if st.button("🆙 CARICA IN FOUNDRY", width='stretch', type="primary"):
+        st.write("### 🔍 Debug Log") # Appare nella pagina web
+        
+        # 1. Verifica Dati
+        st.write(f"- Piano attivo: `{st.session_state.piano_attivo_id}`")
+        df_to_send = edited_df.drop(columns=["Ricevuto", "Data Ricezione", "Stato Consegna"])
+        st.write(f"- Righe da inviare: {len(df_to_send)}")
+
+        # 2. Tentativo di esecuzione
+        try:
+            with st.status("Tentativo di connessione a Foundry...", expanded=True) as status:
+                st.write("Chiamata funzione `upload_to_foundry`...")
+                
+                # Eseguiamo la funzione
+                successo = upload_to_foundry(df_to_send, st.session_state.piano_attivo_id)
+                
+                if successo:
+                    status.update(label="✅ Caricamento completato!", state="complete", expanded=False)
+                    st.balloons()
+                    st.success("Dati inviati correttamente!")
+                else:
+                    status.update(label="❌ Fallito", state="error")
+                    st.error("La funzione ha restituito False senza errori.")
+        
+        except Exception as e:
+            st.error(f"💥 ERRORE CRITICO: {str(e)}")
+            # Questo scrive l'errore completo nel terminale
+            import traceback
+            traceback.print_exc()
 
 # --- 03 STORICO ---
 st.markdown('<div class="section-label">03 — Archivio Rapido Piani</div>', unsafe_allow_html=True)
