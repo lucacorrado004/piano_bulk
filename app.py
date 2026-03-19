@@ -9,21 +9,22 @@ from dotenv import load_dotenv
 # =========================
 # CARICAMENTO VARIABILI AMBIENTE
 # =========================
-load_dotenv(dotenv_path=r"C:\Users\M346685\OneDrive - MerckGroup\Warehouse Team - General\app piano bulk\code\token.env")
-
+load_dotenv()  # Carica .env dal percorso corrente
 
 TOKEN = os.getenv("TOKEN")
 FOUNDRY_URL = os.getenv("DOMAIN")
 DATASET_RID = "ri.foundry.main.dataset.xxxxx"
 
 def upload_to_foundry(df: pd.DataFrame, piano_id: str):
-    if not TOKEN or not FOUNDRY_URL:
+    token = os.getenv("TOKEN")
+    foundry_url = os.getenv("DOMAIN")
+    if not token or not foundry_url:
         raise Exception("TOKEN o DOMAIN non configurati nel .env")
 
-    url = f"{FOUNDRY_URL}/api/v2/datasets/{DATASET_RID}/transactions"
+    url = f"{foundry_url}/api/v2/datasets/{DATASET_RID}/transactions"
 
     headers = {
-        "Authorization": f"Bearer {TOKEN}",
+        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
 
@@ -48,6 +49,7 @@ def upload_to_foundry(df: pd.DataFrame, piano_id: str):
         raise Exception(f"Errore Foundry: {response.text}")
 
     return True
+
 
 # =========================
 # CONFIGURAZIONE PAGINA
