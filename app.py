@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 # =========================
 # CARICAMENTO VARIABILI AMBIENTE
 # =========================
-load_dotenv()  # Carica .env dal percorso corrente
+load_dotenv(dotenv_path="C:\Users\M346685\OneDrive - MerckGroup\Warehouse Team - General\app piano bulk\code\token.env")  # Carica .env dal percorso corrente
 
 TOKEN = os.getenv("TOKEN")
 FOUNDRY_URL = os.getenv("DOMAIN")
