@@ -18,6 +18,7 @@ def upload_to_foundry(df: pd.DataFrame, piano_id: str):
     token = os.getenv("TOKEN")
     foundry_url = os.getenv("DOMAIN")
     DATASET_RID = "ri.foundry.main.dataset.xxxxx" # <--- ASSICURATI SIA CORRETTO
+    url = f"{foundry_url}/api/v2/datasets/{DATASET_RID}/content/import"
     
     # 2. Controllo configurazione
     if not token or not foundry_url:
