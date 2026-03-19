@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 # CARICAMENTO VARIABILI AMBIENTE
 # =========================
 load_dotenv(r"C:\Users\M346685\OneDrive - MerckGroup\Warehouse Team - General\app piano bulk\code\token.env")
+st.write("TOKEN:", repr(os.getenv("TOKEN")))
+st.write("DOMAIN:", repr(os.getenv("DOMAIN")))
  # Carica .env dal percorso corrente
 
 def upload_to_foundry(df: pd.DataFrame, piano_id: str):
