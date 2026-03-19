@@ -175,28 +175,29 @@ if st.session_state.piano_attivo_id:
             export_df = edited_df.copy()
             export_df["Piano_ID"] = st.session_state.piano_attivo_id
             
+            # INCOLLA QUI IL TUO URL DEL FOGLIO GOOGLE
+            URL_DEL_MIO_FOGLIO = "https://docs.google.com/spreadsheets/d/1WEhC16nlW-8LwkTkiMdMBudc73osPYDF8a8gN0jv0KM/edit?gid=0#gid=0"
+            
             try:
-                # Connessione automatica tramite i Secrets TOML
                 conn = st.connection("gsheets", type=GSheetsConnection)
                 
-                # Prova a leggere lo storico esistente (ttl=0 evita cache vecchia)
                 try:
-                    existing_data = conn.read(ttl=0)
+                    # Specifichiamo l'URL direttamente qui
+                    existing_data = conn.read(spreadsheet=URL_DEL_MIO_FOGLIO, ttl=0)
                 except:
                     existing_data = pd.DataFrame()
                 
                 if existing_data is not None and not existing_data.empty:
-                    # Rimuove versioni vecchie dello stesso piano per evitare duplicati
                     history_df = existing_data[existing_data["Piano_ID"] != st.session_state.piano_attivo_id]
                     final_df = pd.concat([history_df, export_df], ignore_index=True)
                 else:
                     final_df = export_df
                 
-                # Aggiorna il foglio Google Sheets
-                conn.update(data=final_df)
+                # Specifichiamo l'URL anche per l'update
+                conn.update(spreadsheet=URL_DEL_MIO_FOGLIO, data=final_df)
                 
                 st.balloons()
-                st.success("Sincronizzazione Cloud completata! Il foglio Google è aggiornato.")
+                st.success("Sincronizzazione Cloud completata!")
             except Exception as e:
                 st.error(f"Errore di connessione Cloud: {e}")
 
