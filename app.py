@@ -14,21 +14,51 @@ from dotenv import load_dotenv
 load_dotenv()  # Carica .env dal percorso corrente
 
 def upload_to_foundry(df: pd.DataFrame, piano_id: str):
+    # 1. Recupero variabili
     token = os.getenv("TOKEN")
     foundry_url = os.getenv("DOMAIN")
-    # ... (resto del codice)
+    DATASET_RID = "ri.foundry.main.dataset.xxxxx" # <--- ASSICURATI SIA CORRETTO
     
+    # 2. Controllo configurazione
+    if not token or not foundry_url:
+        raise Exception("TOKEN o DOMAIN non configurati nel .env")
+
+    # 3. Definizione URL (Sposta questa riga qui sopra per sicurezza)
+    url = f"{foundry_url}/api/v2/datasets/{DATASET_RID}/transactions"
+
+    # 4. Preparazione dati
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    df_copy = df.copy()
+    df_copy["piano_id"] = piano_id
+    df_copy["upload_time"] = datetime.now().isoformat()
+
+    data = df_copy.to_dict(orient="records")
+
+    payload = {
+        "operations": [
+            {
+                "type": "append",
+                "data": data
+            }
+        ]
+    }
+
+    # 5. Chiamata API con gestione errori migliorata
     try:
         response = requests.post(url, json=payload, headers=headers, timeout=30)
-        # DEBUG: Vedi cosa risponde davvero Foundry
-        print(f"Status: {response.status_code}") 
-        print(f"Response: {response.text}")
         
+        # Se Foundry risponde con un errore (es. 401, 403, 404, 500)
         if response.status_code not in [200, 201, 202]:
-            raise Exception(f"Errore {response.status_code}: {response.text}")
+            raise Exception(f"Foundry API Error {response.status_code}: {response.text}")
+            
         return True
     except requests.exceptions.RequestException as e:
-        raise Exception(f"Errore di connessione: {e}")
+        # Errore di connessione (URL sbagliato, timeout, etc.)
+        raise Exception(f"Errore di connessione a Foundry: {str(e)}")
 
 
 # =========================
