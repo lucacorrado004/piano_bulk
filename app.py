@@ -3,11 +3,15 @@ import pandas as pd
 import sqlite3
 from datetime import date
 import os
+from streamlit_gsheets import GSheetsConnection
 
 # =========================
 # CONFIGURAZIONE PAGINA
 # =========================
 st.set_page_config(page_title="Piano Bulk", page_icon="📦", layout="wide", initial_sidebar_state="collapsed")
+
+# Inserisci qui l'URL del tuo Google Sheet (deve essere Editor "Chiunque abbia il link")
+URL_FOGLIO_GOOGLE = "https://docs.google.com/spreadsheets/d/1WEhC16nlW-8LwkTkiMdMBudc73osPYDF8a8gN0jv0KM/edit?usp=sharing"
 
 st.markdown("""
 <style>
@@ -36,7 +40,7 @@ button[kind="primary"] { background-color: var(--merck-purple) !important; borde
 """, unsafe_allow_html=True)
 
 # =========================
-# DATABASE MANAGER
+# DATABASE MANAGER (Locale per l'App)
 # =========================
 class DatabaseManager:
     def __init__(self, db_path="magazzino.db"):
@@ -171,20 +175,31 @@ if st.session_state.piano_attivo_id:
 
     with col2:
         if st.button("📊 AGGIORNA STORICO POWER BI", use_container_width=True):
-            csv_file = "power_bi_source.csv"
+            # Creiamo il DataFrame da esportare
             export_df = edited_df.copy()
             export_df["Piano_ID"] = st.session_state.piano_attivo_id
             
-            if os.path.exists(csv_file):
-                history_df = pd.read_csv(csv_file, sep=';')
-                # Rimuove versioni vecchie dello stesso piano per evitare duplicati
-                history_df = history_df[history_df["Piano_ID"] != st.session_state.piano_attivo_id]
-                final_df = pd.concat([history_df, export_df], ignore_index=True)
-            else:
-                final_df = export_df
+            try:
+                # Connessione a Google Sheets
+                conn = st.connection("gsheets", type=GSheetsConnection)
                 
-            final_df.to_csv(csv_file, index=False, sep=';')
-            st.success(f"Dati accodati! Lo storico ora ha {len(final_df)} righe.")
+                # 1. Legge lo storico esistente dal foglio Google
+                existing_data = conn.read(spreadsheet=URL_FOGLIO_GOOGLE)
+                
+                # 2. Rimuove le righe del piano attuale per evitare duplicati e accoda le nuove
+                if not existing_data.empty:
+                    history_df = existing_data[existing_data["Piano_ID"] != st.session_state.piano_attivo_id]
+                    final_df = pd.concat([history_df, export_df], ignore_index=True)
+                else:
+                    final_df = export_df
+                
+                # 3. Sovrascrive il foglio Google con i dati aggiornati
+                conn.update(spreadsheet=URL_FOGLIO_GOOGLE, data=final_df)
+                
+                st.balloons()
+                st.success(f"Dati sincronizzati su Google Sheets! Storico aggiornato: {len(final_df)} righe.")
+            except Exception as e:
+                st.error(f"Errore durante la sincronizzazione Cloud: {e}")
 
 # --- 03 STORICO ---
 st.markdown('<div class="section-label">03 — Archivio Rapido Piani</div>', unsafe_allow_html=True)
