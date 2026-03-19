@@ -189,7 +189,12 @@ if up:
             if st.button("⚡ ESTRAI SETTIMANA", type="primary", use_container_width=True):
                 df_filtrato = df_preview[df_preview["WEEK"] == week_scelta]
                 st.session_state.piano_attivo_id = db.salva_nuovo_piano(df_filtrato, week_scelta)
-                st.experimental_rerun()
+                try:
+                    st.experimental_rerun()
+                except AttributeError:
+                    # fallback: ricarica manuale della pagina tramite JS
+                    st.write('<script>window.location.reload()</script>', unsafe_allow_html=True)
+
 
 # --- 02 GESTIONE ---
 if st.session_state.piano_attivo_id:
@@ -258,7 +263,11 @@ if st.session_state.piano_attivo_id:
             )
             db.salva_modifiche(st.session_state.piano_attivo_id, edited_df)
             st.success("Modifiche salvate con successo.")
-            st.experimental_rerun()
+            try:
+                    st.experimental_rerun()
+            except AttributeError:
+                    # fallback: ricarica manuale della pagina tramite JS
+                    st.write('<script>window.location.reload()</script>', unsafe_allow_html=True)
 
     with col2:
         # EXPORT CSV PER POWER BI
@@ -287,4 +296,8 @@ if not df_list.empty:
         with cols[i % 5]:
             if st.button(f"📂 {row['piano_id']}", key=f"btn_{row['piano_id']}", use_container_width=True):
                 st.session_state.piano_attivo_id = row["piano_id"]
-                st.experimental_rerun()
+                try:
+                    st.experimental_rerun()
+                except AttributeError:
+                    # fallback: ricarica manuale della pagina tramite JS
+                    st.write('<script>window.location.reload()</script>', unsafe_allow_html=True)
