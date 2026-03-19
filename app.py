@@ -301,16 +301,19 @@ if st.session_state.piano_attivo_id:
     with col3:
         if st.button("🆙 CARICA IN FOUNDRY", width='stretch', type="primary"):
             try:
-                # Prepariamo i dati escludendo le colonne della UI
+                # 1. DEFINIAMO la variabile (Fondamentale!)
+                # Creiamo il dataframe pulito togliendo le colonne che servono solo alla UI di Streamlit
                 df_to_send = edited_df.drop(columns=["Ricevuto", "Data Ricezione", "Stato Consegna"])
                 
-                # Chiamata alla funzione
-                upload_to_foundry(df_to_send, st.session_state.piano_attivo_id)
+                # 2. USIAMO la variabile (Ora Python la conosce)
+                with st.spinner("Invio dati a Palantir Foundry..."):
+                    successo = upload_to_foundry(df_to_send, st.session_state.piano_attivo_id)
                 
-                st.success("Dati caricati su Foundry con successo!")
-                st.balloons()
+                if successo:
+                    st.success("Dati caricati su Foundry con successo!")
+                    st.balloons()
+                    
             except Exception as e:
-                # Riga corretta senza parentesi extra
                 st.error(f"Errore caricamento Foundry: {str(e)}")
 
         # 2. Tentativo di esecuzione
